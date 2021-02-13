@@ -165,9 +165,9 @@ const char* to_string (QueueError err);
 const char* to_string (DeviceError err);
 const char* to_string (SwapchainError err);
 
-// Gathers useful information about the available vulkan capabilities, like layers and instance extensions.
-// Use this for enabling features conditionally, ie if you would like an extension but can use a fallback if
-// it isn't supported but need to know if support is available first.
+// Gathers useful information about the available vulkan capabilities, like layers and instance
+// extensions. Use this for enabling features conditionally, ie if you would like an extension but
+// can use a fallback if it isn't supported but need to know if support is available first.
 struct SystemInfo {
 	private:
 	SystemInfo ();
@@ -175,7 +175,7 @@ struct SystemInfo {
 	public:
     // Use get_system_info to create a SystemInfo struct. This is because loading vulkan could fail.
 	static detail::Result<SystemInfo> get_system_info ();
-	static detail::Result<SystemInfo>  get_system_info (PFN_vkGetInstanceProcAddr fp_vkGetInstanceProcAddr);
+    static detail::Result<SystemInfo> get_system_info (PFN_vkGetInstanceProcAddr fp_vkGetInstanceProcAddr);
 
 	// Returns true if a layer is available
 	bool is_layer_available (const char* layer_name) const;
@@ -247,16 +247,19 @@ class InstanceBuilder {
 
 	// Use a default debug callback that prints to standard out.
 	InstanceBuilder& use_default_debug_messenger ();
-	// Provide a user defined debug callback.
-	InstanceBuilder& set_debug_callback (PFN_vkDebugUtilsMessengerCallbackEXT callback);
-	// Set what message severity is needed to trigger the callback.
-	InstanceBuilder& set_debug_messenger_severity (VkDebugUtilsMessageSeverityFlagsEXT severity);
-	// Add a message severity to the list that triggers the callback.
-	InstanceBuilder& add_debug_messenger_severity (VkDebugUtilsMessageSeverityFlagsEXT severity);
-	// Set what message type triggers the callback.
-	InstanceBuilder& set_debug_messenger_type (VkDebugUtilsMessageTypeFlagsEXT type);
-	// Add a message type to the list of that triggers the callback.
-	InstanceBuilder& add_debug_messenger_type (VkDebugUtilsMessageTypeFlagsEXT type);
+    // Provide a user defined debug callback.
+    InstanceBuilder& set_debug_callback (PFN_vkDebugUtilsMessengerCallbackEXT callback);
+    // Set what message severity is needed to trigger the callback.
+    InstanceBuilder& set_debug_messenger_severity (VkDebugUtilsMessageSeverityFlagsEXT severity);
+    // Add a message severity to the list that triggers the callback.
+    InstanceBuilder& add_debug_messenger_severity (VkDebugUtilsMessageSeverityFlagsEXT severity);
+    // Set what message type triggers the callback.
+    InstanceBuilder& set_debug_messenger_type (VkDebugUtilsMessageTypeFlagsEXT type);
+    // Add a message type to the list of that triggers the callback.
+    InstanceBuilder& add_debug_messenger_type (VkDebugUtilsMessageTypeFlagsEXT type);
+
+    // Provide a specific messenger for instance creation
+    InstanceBuilder& provide_instance_debug_messenger (VkDebugUtilsMessengerCreateInfoEXT messenger);
 
 	// Disable some validation checks.
 	// Checks: All, and Shaders
@@ -297,6 +300,8 @@ class InstanceBuilder {
 		    VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 		    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
+        VkDebugUtilsMessengerCreateInfoEXT instance_debug_messenger;
+
 		// validation features
 		std::vector<VkValidationCheckEXT> disabled_validation_checks;
 		std::vector<VkValidationFeatureEnableEXT> enabled_validation_features;
@@ -308,6 +313,7 @@ class InstanceBuilder {
 		bool request_validation_layers = false;
 		bool enable_validation_layers = false;
 		bool use_debug_messenger = false;
+        bool override_instance_debug_messenger = false;
 		bool headless_context = false;
 
 		PFN_vkGetInstanceProcAddr fp_vkGetInstanceProcAddr = nullptr;
@@ -319,7 +325,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL default_debug_callback (VkDebugUtilsMessageSeveri
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
     void* pUserData);
 
-void destroy_debug_utils_messenger(VkInstance const instance, VkDebugUtilsMessengerEXT const messenger, VkAllocationCallbacks* allocation_callbacks = nullptr);
+void destroy_debug_utils_messenger (VkInstance const instance,
+    VkDebugUtilsMessengerEXT const messenger,
+    VkAllocationCallbacks* allocation_callbacks = nullptr);
 
 // ---- Physical Device ---- //
 class PhysicalDeviceSelector;
@@ -556,7 +564,11 @@ class SwapchainBuilder {
 	public:
 	explicit SwapchainBuilder (Device const& device);
 	explicit SwapchainBuilder (Device const& device, VkSurfaceKHR const surface);
-	explicit SwapchainBuilder (VkPhysicalDevice const physical_device, VkDevice const device, VkSurfaceKHR const surface, int32_t graphics_queue_index = -1, int32_t present_queue_index = -1);
+    explicit SwapchainBuilder (VkPhysicalDevice const physical_device,
+        VkDevice const device,
+        VkSurfaceKHR const surface,
+        int32_t graphics_queue_index = -1,
+        int32_t present_queue_index = -1);
 
 	detail::Result<Swapchain> build () const;
 

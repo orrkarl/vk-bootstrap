@@ -666,8 +666,14 @@ detail::Result<Instance> InstanceBuilder::build () const {
 		messengerCreateInfo.messageSeverity = info.debug_message_severity;
 		messengerCreateInfo.messageType = info.debug_message_type;
 		messengerCreateInfo.pfnUserCallback = info.debug_callback;
-		pNext_chain.push_back (reinterpret_cast<VkBaseOutStructure*> (&messengerCreateInfo));
+        if (!info.override_instance_debug_messenger) {
+            pNext_chain.push_back (reinterpret_cast<VkBaseOutStructure*> (&messengerCreateInfo));
+        }
 	}
+    auto localInstanceMessenger = info.instance_debug_messenger;
+    if (info.override_instance_debug_messenger) {
+        pNext_chain.push_back (reinterpret_cast<VkBaseOutStructure*> (&localInstanceMessenger));
+    }
 
 	VkValidationFeaturesEXT features{};
 	if (info.enabled_validation_features.size () != 0 || info.disabled_validation_features.size ()) {
@@ -804,6 +810,11 @@ InstanceBuilder& InstanceBuilder::set_debug_messenger_type (VkDebugUtilsMessageT
 InstanceBuilder& InstanceBuilder::add_debug_messenger_type (VkDebugUtilsMessageTypeFlagsEXT type) {
 	info.debug_message_type = info.debug_message_type | type;
 	return *this;
+}
+InstanceBuilder& InstanceBuilder::provide_instance_debug_messenger (VkDebugUtilsMessengerCreateInfoEXT messenger) {
+    info.override_instance_debug_messenger = true;
+    info.instance_debug_messenger = messenger;
+    return *this;
 }
 InstanceBuilder& InstanceBuilder::add_validation_disable (VkValidationCheckEXT check) {
 	info.disabled_validation_checks.push_back (check);
