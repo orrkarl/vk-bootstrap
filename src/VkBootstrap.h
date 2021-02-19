@@ -259,7 +259,7 @@ class InstanceBuilder {
     InstanceBuilder& add_debug_messenger_type (VkDebugUtilsMessageTypeFlagsEXT type);
 
     // Provide a specific messenger for instance creation
-    InstanceBuilder& provide_instance_debug_messenger (VkDebugUtilsMessengerCreateInfoEXT messenger);
+    InstanceBuilder& provide_instance_debug_messengers (std::vector<VkDebugUtilsMessengerCreateInfoEXT> messengers);
 
 	// Disable some validation checks.
 	// Checks: All, and Shaders
@@ -300,7 +300,7 @@ class InstanceBuilder {
 		    VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
 		    VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
-        VkDebugUtilsMessengerCreateInfoEXT instance_debug_messenger;
+        std::vector<VkDebugUtilsMessengerCreateInfoEXT> instance_debug_messengers;
 
 		// validation features
 		std::vector<VkValidationCheckEXT> disabled_validation_checks;

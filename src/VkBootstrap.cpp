@@ -650,7 +650,7 @@ detail::Result<Instance> InstanceBuilder::build () const {
 		layers.push_back (layer);
 
 	if (info.enable_validation_layers || (info.request_validation_layers && system.validation_layers_available)) {
-		layers.push_back (detail::validation_layer_name);
+        layers.push_back (detail::validation_layer_name);
 	}
 	bool all_layers_supported = detail::check_layers_supported (system.available_layers, layers);
 	if (!all_layers_supported) {
@@ -669,10 +669,12 @@ detail::Result<Instance> InstanceBuilder::build () const {
         if (!info.override_instance_debug_messenger) {
             pNext_chain.push_back (reinterpret_cast<VkBaseOutStructure*> (&messengerCreateInfo));
         }
-	}
-    auto localInstanceMessenger = info.instance_debug_messenger;
+    }
+    auto messengers = info.instance_debug_messengers;
     if (info.override_instance_debug_messenger) {
-        pNext_chain.push_back (reinterpret_cast<VkBaseOutStructure*> (&localInstanceMessenger));
+        for (VkDebugUtilsMessengerCreateInfoEXT& messenger : messengers) {
+            pNext_chain.push_back (reinterpret_cast<VkBaseOutStructure*> (&messenger));
+        }
     }
 
 	VkValidationFeaturesEXT features{};
@@ -811,9 +813,14 @@ InstanceBuilder& InstanceBuilder::add_debug_messenger_type (VkDebugUtilsMessageT
 	info.debug_message_type = info.debug_message_type | type;
 	return *this;
 }
-InstanceBuilder& InstanceBuilder::provide_instance_debug_messenger (VkDebugUtilsMessengerCreateInfoEXT messenger) {
+InstanceBuilder& InstanceBuilder::provide_instance_debug_messengers (
+    std::vector<VkDebugUtilsMessengerCreateInfoEXT> messengers) {
+    if (messengers.empty ()) {
+        throw std::runtime_error ("no debug messengers found");
+    }
     info.override_instance_debug_messenger = true;
-    info.instance_debug_messenger = messenger;
+    info.instance_debug_messengers = std::move (messengers);
+
     return *this;
 }
 InstanceBuilder& InstanceBuilder::add_validation_disable (VkValidationCheckEXT check) {
